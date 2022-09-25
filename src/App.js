@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react";
 import {AiOutlinePlus} from "react-icons/ai";
 import Todo from "./components/Todo";
 import {db} from './components/Firebase';
-import {query, collection} from 'firebase/firestore';
+import {query, collection, onSnapshot} from 'firebase/firestore';
 
 const style = {
   bg: `h-screen w-screen p-4 bg-gradient-to-r from-[#2F80ED] to-[#1CB5E0]`,
@@ -16,11 +16,20 @@ const style = {
 
 function App() {
 
-  const [todos, setTodos] = useState(['Learn React', 'Learn TailwindCSS', 'Learn Firebase']);
+  const [todos, setTodos] = useState([]);
 
   useEffect(() => {
     const q = query(collection(db, "todos"));
-  })
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let todoArr = []
+      querySnapshot.forEach((doc) => {
+        todoArr.push({...doc.data(), id: doc.id})
+      });
+      setTodos(todoArr)
+    })
+    return () => unsubscribe()
+  }, [])
+
   return (
     <div className={style.bg}>
       <div className={style.container}>
